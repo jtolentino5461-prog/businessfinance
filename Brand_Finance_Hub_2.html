@@ -1,0 +1,1514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Brand Finance Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  :root {
+    --bg: #F7F5F2;
+    --surface: #FFFFFF;
+    --surface2: #F0EDE8;
+    --border: #E5E0D8;
+    --accent: #1A1A1A;
+    --accent2: #C8843A;
+    --accent3: #4A7C59;
+    --danger: #B94040;
+    --text: #1A1A1A;
+    --text2: #6B6560;
+    --text3: #9B9490;
+    --sidebar-w: 230px;
+    --green: #4A7C59;
+    --red: #B94040;
+    --amber: #C8843A;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; display: flex; }
+
+  /* SIDEBAR */
+  .sidebar {
+    width: var(--sidebar-w);
+    background: var(--accent);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0; left: 0;
+    z-index: 100;
+    padding: 0;
+  }
+  .sidebar-logo {
+    padding: 28px 24px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .sidebar-logo .brand { font-size: 16px; font-weight: 600; color: #fff; letter-spacing: 0.02em; }
+  .sidebar-logo .sub { font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 2px; font-family: 'DM Mono', monospace; }
+  .sidebar-nav { padding: 16px 12px; flex: 1; }
+  .nav-section-label { font-size: 10px; font-weight: 500; color: rgba(255,255,255,0.3); letter-spacing: 0.12em; text-transform: uppercase; padding: 0 12px; margin: 16px 0 6px; }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 12px; border-radius: 8px; cursor: pointer;
+    font-size: 13.5px; font-weight: 400; color: rgba(255,255,255,0.55);
+    transition: all 0.15s; margin-bottom: 2px;
+  }
+  .nav-item:hover { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.85); }
+  .nav-item.active { background: rgba(255,255,255,0.12); color: #fff; font-weight: 500; }
+  .nav-icon { width: 16px; height: 16px; opacity: 0.8; flex-shrink: 0; }
+  .nav-badge {
+    margin-left: auto; background: var(--accent2); color: #fff;
+    font-size: 10px; font-weight: 600; border-radius: 99px;
+    padding: 1px 7px; font-family: 'DM Mono', monospace;
+  }
+  .sidebar-footer { padding: 16px; border-top: 1px solid rgba(255,255,255,0.08); }
+  .tax-year-badge {
+    background: rgba(200,132,58,0.2); border: 1px solid rgba(200,132,58,0.3);
+    border-radius: 6px; padding: 8px 12px; font-size: 12px; color: var(--accent2);
+  }
+  .tax-year-badge strong { display: block; font-size: 11px; color: rgba(255,255,255,0.4); font-weight: 400; margin-bottom: 2px; }
+
+  /* MAIN */
+  .main { margin-left: var(--sidebar-w); flex: 1; min-height: 100vh; }
+  .page { display: none; padding: 36px 40px; max-width: 1100px; }
+  .page.active { display: block; }
+  .page-header { margin-bottom: 28px; }
+  .page-title { font-size: 26px; font-weight: 600; color: var(--text); }
+  .page-sub { font-size: 14px; color: var(--text2); margin-top: 4px; }
+
+  /* CARDS */
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 20px 24px;
+  }
+  .card-title { font-size: 13px; font-weight: 500; color: var(--text2); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; }
+  .card-value { font-size: 28px; font-weight: 600; color: var(--text); font-family: 'DM Mono', monospace; }
+  .card-value.green { color: var(--green); }
+  .card-value.red { color: var(--red); }
+  .card-value.amber { color: var(--amber); }
+  .card-delta { font-size: 12px; color: var(--text3); margin-top: 4px; }
+  .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
+
+  /* TABLES */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  th { text-align: left; padding: 10px 14px; font-size: 11px; font-weight: 500; color: var(--text3); text-transform: uppercase; letter-spacing: 0.07em; border-bottom: 1px solid var(--border); background: var(--surface2); }
+  td { padding: 12px 14px; border-bottom: 1px solid var(--border); color: var(--text); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #FDFCFA; }
+  .status-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 10px; border-radius: 99px; font-size: 11.5px; font-weight: 500;
+  }
+  .badge-yes { background: #EDF5F0; color: var(--green); }
+  .badge-no { background: #FCEDEC; color: var(--red); }
+  .badge-partial { background: #FDF4EA; color: var(--amber); }
+  .badge-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+  /* FORMS */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .form-grid-3 { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 14px; }
+  .field label { display: block; font-size: 12px; font-weight: 500; color: var(--text2); margin-bottom: 6px; }
+  input, select, textarea {
+    width: 100%; padding: 9px 12px; border: 1px solid var(--border);
+    border-radius: 8px; font-size: 13.5px; font-family: 'DM Sans', sans-serif;
+    color: var(--text); background: var(--surface); outline: none; transition: border 0.15s;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+  textarea { resize: vertical; min-height: 100px; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 9px 18px; border-radius: 8px; font-size: 13.5px;
+    font-weight: 500; cursor: pointer; transition: all 0.15s; border: none;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: #333; }
+  .btn-danger { background: #FCEDEC; color: var(--red); border: 1px solid #F5C4C4; }
+  .btn-danger:hover { background: #F9DEDE; }
+  .btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border); }
+  .btn-outline:hover { background: var(--surface2); }
+  .btn-sm { padding: 5px 12px; font-size: 12px; border-radius: 6px; }
+
+  /* TABS */
+  .tab-bar { display: flex; gap: 2px; background: var(--surface2); border-radius: 10px; padding: 3px; width: fit-content; margin-bottom: 24px; }
+  .tab-btn { padding: 7px 18px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 400; color: var(--text2); border: none; background: transparent; font-family: 'DM Sans', sans-serif; transition: all 0.15s; }
+  .tab-btn.active { background: var(--surface); color: var(--text); font-weight: 500; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+
+  /* NOTES */
+  .notes-grid { display: grid; grid-template-columns: 280px 1fr; gap: 20px; height: 600px; }
+  .notes-list { border: 1px solid var(--border); border-radius: 12px; background: var(--surface); overflow-y: auto; }
+  .note-item { padding: 14px 16px; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.12s; }
+  .note-item:hover { background: var(--surface2); }
+  .note-item.active { background: #F0EDE8; }
+  .note-item-title { font-size: 13.5px; font-weight: 500; color: var(--text); margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .note-item-preview { font-size: 12px; color: var(--text3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .note-item-date { font-size: 11px; color: var(--text3); margin-top: 4px; font-family: 'DM Mono', monospace; }
+  .note-editor { border: 1px solid var(--border); border-radius: 12px; background: var(--surface); display: flex; flex-direction: column; overflow: hidden; }
+  .note-editor-header { padding: 14px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
+  .note-title-input { flex: 1; border: none; font-size: 16px; font-weight: 600; color: var(--text); outline: none; background: transparent; font-family: 'DM Sans', sans-serif; }
+  .note-body-textarea { flex: 1; padding: 20px; border: none; resize: none; font-size: 14px; line-height: 1.7; color: var(--text); outline: none; background: transparent; font-family: 'DM Sans', sans-serif; }
+
+  /* RESOURCES */
+  .resource-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    padding: 20px 24px; margin-bottom: 16px;
+  }
+  .resource-card-header { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+  .resource-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+  .resource-title { font-size: 15px; font-weight: 600; color: var(--text); }
+  .resource-desc { font-size: 13px; color: var(--text2); }
+  .step-list { list-style: none; counter-reset: steps; }
+  .step-list li { counter-increment: steps; display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 13.5px; color: var(--text2); line-height: 1.5; }
+  .step-list li:last-child { border-bottom: none; }
+  .step-list li::before { content: counter(steps); min-width: 22px; height: 22px; background: var(--accent); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; flex-shrink: 0; margin-top: 1px; }
+  .resource-links { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+  .resource-link {
+    font-size: 12px; color: var(--accent2); border: 1px solid rgba(200,132,58,0.3);
+    background: rgba(200,132,58,0.06); padding: 4px 12px; border-radius: 99px;
+    text-decoration: none; font-weight: 500; transition: all 0.15s;
+  }
+  .resource-link:hover { background: rgba(200,132,58,0.12); }
+
+  /* ADMIN */
+  .settings-section { margin-bottom: 28px; }
+  .settings-title { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+  .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .toggle-label { font-size: 13.5px; color: var(--text); }
+  .toggle-sub { font-size: 12px; color: var(--text3); margin-top: 2px; }
+  .toggle { position: relative; width: 40px; height: 22px; }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .toggle-slider { position: absolute; inset: 0; background: var(--border); border-radius: 99px; cursor: pointer; transition: 0.2s; }
+  .toggle-slider::before { content: ''; position: absolute; width: 16px; height: 16px; left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: 0.2s; }
+  .toggle input:checked + .toggle-slider { background: var(--green); }
+  .toggle input:checked + .toggle-slider::before { transform: translateX(18px); }
+
+  /* DIVIDERS */
+  .section-divider { height: 1px; background: var(--border); margin: 24px 0; }
+  .inline-flex { display: flex; align-items: center; gap: 10px; }
+  .mt-16 { margin-top: 16px; }
+  .mt-24 { margin-top: 24px; }
+  .mb-16 { margin-bottom: 16px; }
+  .alert {
+    border-radius: 10px; padding: 12px 16px; font-size: 13px; margin-bottom: 20px;
+    display: flex; align-items: flex-start; gap: 10px;
+  }
+  .alert-warn { background: #FDF4EA; border: 1px solid #F5D9A8; color: #7A5020; }
+  .alert-info { background: #EDF4FB; border: 1px solid #B5D4F4; color: #1A4A7A; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .chart-wrap { position: relative; height: 320px; display: flex; align-items: center; justify-content: center; }
+  .empty-state { text-align: center; padding: 40px 20px; color: var(--text3); font-size: 14px; }
+
+  /* PLANNER */
+  .plan-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; margin-bottom: 24px; }
+  .plan-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  .plan-card-header { padding: 16px 20px 12px; display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+  .plan-card-header-left { flex: 1; min-width: 0; }
+  .plan-card-name { font-size: 15px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .plan-card-meta { font-size: 12px; color: var(--text3); margin-top: 3px; }
+  .plan-type-pill { font-size: 11px; font-weight: 500; padding: 3px 10px; border-radius: 99px; white-space: nowrap; }
+  .pill-biz { background: #EDF4FB; color: #1A4A7A; }
+  .pill-vac { background: #EDF5F0; color: var(--green); }
+  .pill-personal { background: #F0EDE8; color: var(--text2); }
+  .plan-budget-row { padding: 0 20px 8px; display: flex; align-items: center; justify-content: space-between; font-size: 13px; }
+  .plan-progress-wrap { padding: 0 20px 8px; }
+  .plan-progress-track { height: 5px; background: var(--surface2); border-radius: 99px; overflow: hidden; }
+  .plan-progress-fill { height: 100%; border-radius: 99px; transition: width 0.4s; }
+  .fill-safe { background: var(--green); }
+  .fill-warn { background: var(--amber); }
+  .fill-over { background: var(--red); }
+  .plan-items { border-top: 1px solid var(--border); }
+  .plan-item-row { display: flex; align-items: center; justify-content: space-between; padding: 9px 20px; border-bottom: 1px solid var(--border); font-size: 13px; gap: 10px; }
+  .plan-item-row:last-child { border-bottom: none; }
+  .plan-item-name { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text); }
+  .plan-item-cat { font-size: 11px; color: var(--text3); margin-top: 1px; }
+  .plan-item-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+  .plan-item-amt { font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 500; }
+  .plan-item-status { font-size: 11px; padding: 2px 8px; border-radius: 99px; }
+  .status-planned { background: #F0EDE8; color: var(--text2); }
+  .status-booked { background: #EDF4FB; color: #1A4A7A; }
+  .status-paid { background: #EDF5F0; color: var(--green); }
+  .plan-add-item { padding: 10px 20px; border-top: 1px solid var(--border); }
+  .plan-footer { padding: 10px 20px; border-top: 1px solid var(--border); display: flex; gap: 8px; background: var(--surface2); }
+
+  @media (max-width: 900px) {
+    .sidebar { width: 60px; }
+    .sidebar-logo .brand, .sidebar-logo .sub, .nav-section-label, .nav-item span, .sidebar-footer, .nav-badge { display: none; }
+    .main { margin-left: 60px; }
+    .page { padding: 24px 20px; }
+    .stats-grid { grid-template-columns: 1fr 1fr; }
+    .two-col { grid-template-columns: 1fr; }
+    .form-grid, .form-grid-3 { grid-template-columns: 1fr; }
+    .notes-grid { grid-template-columns: 1fr; height: auto; }
+  }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="brand" id="sb-brand">Brand Finance Hub</div>
+    <div class="sub">California · Tax Year <span id="sb-year">2024</span></div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Overview</div>
+    <div class="nav-item active" data-page="dashboard">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg>
+      <span>Dashboard</span>
+    </div>
+
+    <div class="nav-section-label">Finance</div>
+    <div class="nav-item" data-page="writeoffs">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 12l3-3 3 3 6-6"/><circle cx="13" cy="4" r="1.5"/></svg>
+      <span>Tax Write-Offs</span>
+      <span class="nav-badge" id="nb-wo">0</span>
+    </div>
+    <div class="nav-item" data-page="finances">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6.5"/><path d="M8 4.5v7M5.5 6.5C5.5 5.4 6.6 4.5 8 4.5s2.5.9 2.5 2S9.4 8 8 8s-2.5.9-2.5 2 1.1 2 2.5 2 2.5-.9 2.5-2"/></svg>
+      <span>Finances & Chart</span>
+    </div>
+
+    <div class="nav-section-label">Tools</div>
+    <div class="nav-item" data-page="resources">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 2h8l2 2v10H3z"/><path d="M11 2v3h2M6 7h5M6 10h5M6 4h3"/></svg>
+      <span>Resources & Legal</span>
+    </div>
+    <div class="nav-item" data-page="notes">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 2h10v12H3zM6 6h5M6 9h5M6 12h3"/></svg>
+      <span>Notes</span>
+      <span class="nav-badge" id="nb-notes">0</span>
+    </div>
+
+    <div class="nav-item" data-page="planner">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="3" width="14" height="11" rx="1.5"/><path d="M5 3V1M11 3V1M1 7h14"/><path d="M4 10h2M7 10h2M10 10h2"/></svg>
+      <span>Spend Planner</span>
+      <span class="nav-badge" id="nb-plans">0</span>
+    </div>
+
+    <div class="nav-section-label">System</div>
+    <div class="nav-item" data-page="admin">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="2.5"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.41 1.41M11.54 11.54l1.41 1.41M3.05 12.95l1.41-1.41M11.54 4.46l1.41-1.41"/></svg>
+      <span>Admin Settings</span>
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="tax-year-badge">
+      <strong>Tax Year</strong>
+      <span id="sb-taxyear">2024 — California</span>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- DASHBOARD -->
+  <div class="page active" id="page-dashboard">
+    <div class="page-header">
+      <div class="page-title">Dashboard</div>
+      <div class="page-sub">Your financial overview at a glance</div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="card">
+        <div class="card-title">Total Income</div>
+        <div class="card-value green" id="dash-income">$0</div>
+        <div class="card-delta">This tax year</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Total Expenses</div>
+        <div class="card-value red" id="dash-expenses">$0</div>
+        <div class="card-delta">This tax year</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Total Write-Offs</div>
+        <div class="card-value amber" id="dash-writeoffs">$0</div>
+        <div class="card-delta">Deductible amount</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Net Profit / Loss</div>
+        <div class="card-value" id="dash-net">$0</div>
+        <div class="card-delta">Income minus expenses</div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="card">
+        <div class="card-title" style="margin-bottom:16px;">Recent Transactions</div>
+        <div id="dash-recent">
+          <div class="empty-state">No transactions yet. Add them in Finances.</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="margin-bottom:16px;">Write-Off Summary</div>
+        <div id="dash-wo-summary">
+          <div class="empty-state">No write-offs logged yet.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mt-24">
+      <div class="alert alert-warn" style="margin-bottom:0;">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-top:1px;flex-shrink:0;"><path d="M8 1L15 14H1L8 1z"/><path d="M8 6v4M8 11.5v.5"/></svg>
+        <div><strong>Disclaimer:</strong> This tool is for organizational purposes only and does not constitute legal or tax advice. Consult a licensed CPA or tax attorney for your specific California tax situation.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAX WRITE-OFFS -->
+  <div class="page" id="page-writeoffs">
+    <div class="page-header">
+      <div class="page-title">Tax Write-Offs</div>
+      <div class="page-sub">Track expenses and California deductibility status for your clothing brand</div>
+    </div>
+
+    <div class="alert alert-info">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="flex-shrink:0;margin-top:1px;"><circle cx="8" cy="8" r="6.5"/><path d="M8 7v5M8 5.5v.5"/></svg>
+      <div>California generally follows federal tax law (IRC) for business deductions but has some differences. All deductions must be <strong>ordinary and necessary</strong> for your clothing business. Meal deductions are capped at 50%. Personal clothing is <strong>NOT</strong> deductible unless it's a required uniform/costume.</div>
+    </div>
+
+    <!-- Add Form -->
+    <div class="card mb-16">
+      <div style="font-size:14px;font-weight:600;margin-bottom:14px;">Add Expense / Write-Off</div>
+      <div class="form-grid-3">
+        <div class="field">
+          <label>Expense Description</label>
+          <input type="text" id="wo-desc" placeholder="e.g. Adobe Creative Cloud subscription" />
+        </div>
+        <div class="field">
+          <label>Amount ($)</label>
+          <input type="number" id="wo-amount" placeholder="0.00" min="0" step="0.01" />
+        </div>
+        <div class="field">
+          <label>Date</label>
+          <input type="date" id="wo-date" />
+        </div>
+      </div>
+      <div class="form-grid mt-16" style="grid-template-columns: 1fr 1fr 1fr;">
+        <div class="field">
+          <label>Category</label>
+          <select id="wo-category">
+            <option value="cogs">Cost of Goods Sold (Materials/Inventory)</option>
+            <option value="equipment">Equipment & Machinery</option>
+            <option value="marketing">Marketing & Advertising</option>
+            <option value="software">Software & Subscriptions</option>
+            <option value="shipping">Shipping & Postage</option>
+            <option value="professional">Professional Services (CPA, Attorney)</option>
+            <option value="insurance">Business Insurance</option>
+            <option value="rent">Rent / Studio Space</option>
+            <option value="homeoffice">Home Office</option>
+            <option value="vehicle">Vehicle / Mileage</option>
+            <option value="travel">Business Travel</option>
+            <option value="meals">Meals (Business)</option>
+            <option value="wages">Employee / Contractor Wages</option>
+            <option value="phone">Phone & Internet (Business %)</option>
+            <option value="photography">Photography / Content Creation</option>
+            <option value="other">Other Business Expense</option>
+            <option value="personal">Personal Expense (Non-deductible)</option>
+            <option value="clothing">Personal Clothing (Non-deductible)</option>
+            <option value="entertainment">Entertainment (Non-deductible)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Receipt / Reference #</label>
+          <input type="text" id="wo-ref" placeholder="Optional" />
+        </div>
+        <div class="field" style="display:flex;align-items:flex-end;">
+          <button class="btn btn-primary" onclick="addWriteoff()" style="width:100%;">+ Add Entry</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="filterWO('all', this)">All</button>
+      <button class="tab-btn" onclick="filterWO('yes', this)">✓ Deductible</button>
+      <button class="tab-btn" onclick="filterWO('partial', this)">~ Partial</button>
+      <button class="tab-btn" onclick="filterWO('no', this)">✗ Not Deductible</button>
+    </div>
+
+    <div class="card">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Description</th>
+              <th>Category</th>
+              <th>Amount</th>
+              <th>CA Deductible</th>
+              <th>Deductible Amt</th>
+              <th>Ref #</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="wo-table-body">
+            <tr><td colspan="8"><div class="empty-state">No entries yet. Add your first expense above.</div></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="section-divider"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:0 4px;">
+        <span style="font-size:13px;color:var(--text2);">Total deductible:</span>
+        <span style="font-size:18px;font-weight:600;color:var(--green);font-family:'DM Mono',monospace;" id="wo-total">$0.00</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- FINANCES -->
+  <div class="page" id="page-finances">
+    <div class="page-header">
+      <div class="page-title">Finances & Chart</div>
+      <div class="page-sub">Track income and expenses, visualize where your money goes</div>
+    </div>
+
+    <div class="two-col">
+      <!-- Add Transaction -->
+      <div class="card">
+        <div style="font-size:14px;font-weight:600;margin-bottom:14px;">Add Transaction</div>
+        <div class="field mb-16">
+          <label>Type</label>
+          <select id="tx-type">
+            <option value="income">Income</option>
+            <option value="expense">Expense</option>
+          </select>
+        </div>
+        <div class="field mb-16">
+          <label>Description</label>
+          <input type="text" id="tx-desc" placeholder="e.g. Shopify sales — March" />
+        </div>
+        <div class="form-grid">
+          <div class="field">
+            <label>Amount ($)</label>
+            <input type="number" id="tx-amount" placeholder="0.00" min="0" step="0.01" />
+          </div>
+          <div class="field">
+            <label>Date</label>
+            <input type="date" id="tx-date" />
+          </div>
+        </div>
+        <div class="field mt-16">
+          <label>Category</label>
+          <select id="tx-category">
+            <option value="Sales">Sales / Revenue</option>
+            <option value="Wholesale">Wholesale</option>
+            <option value="Other Income">Other Income</option>
+            <option value="Materials">Materials / COGS</option>
+            <option value="Marketing">Marketing</option>
+            <option value="Software">Software</option>
+            <option value="Shipping">Shipping</option>
+            <option value="Labor">Labor / Contractors</option>
+            <option value="Rent">Rent / Studio</option>
+            <option value="Equipment">Equipment</option>
+            <option value="Professional">Professional Services</option>
+            <option value="Taxes">Taxes / Fees</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <button class="btn btn-primary mt-16" onclick="addTransaction()" style="width:100%;">+ Add Transaction</button>
+      </div>
+
+      <!-- Pie Chart -->
+      <div class="card">
+        <div style="font-size:14px;font-weight:600;margin-bottom:4px;">Spending Breakdown</div>
+        <div style="font-size:12px;color:var(--text3);margin-bottom:12px;">By expense category</div>
+        <div class="chart-wrap">
+          <canvas id="pieChart" role="img" aria-label="Pie chart showing spending breakdown by category">No expense data yet.</canvas>
+        </div>
+        <div id="pie-legend" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;"></div>
+      </div>
+    </div>
+
+    <!-- Transactions Table -->
+    <div class="card mt-24">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <div style="font-size:14px;font-weight:600;">All Transactions</div>
+        <div style="display:flex;gap:8px;">
+          <div style="font-size:13px;color:var(--green);font-weight:500;">Income: <span id="total-income-lbl" style="font-family:'DM Mono',monospace;">$0</span></div>
+          <div style="font-size:13px;color:var(--text3);">|</div>
+          <div style="font-size:13px;color:var(--red);font-weight:500;">Expenses: <span id="total-expense-lbl" style="font-family:'DM Mono',monospace;">$0</span></div>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Date</th><th>Type</th><th>Description</th><th>Category</th><th>Amount</th><th></th></tr>
+          </thead>
+          <tbody id="tx-table-body">
+            <tr><td colspan="6"><div class="empty-state">No transactions yet.</div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- RESOURCES -->
+  <div class="page" id="page-resources">
+    <div class="page-header">
+      <div class="page-title">Resources & Legal</div>
+      <div class="page-sub">California-specific legal and business resources for your clothing brand</div>
+    </div>
+
+    <div class="alert alert-warn">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="flex-shrink:0;margin-top:1px;"><path d="M8 1L15 14H1L8 1z"/><path d="M8 6v4M8 11.5v.5"/></svg>
+      Always consult a licensed California attorney or CPA before filing legal entity paperwork. Laws change frequently. Links are provided as starting points only.
+    </div>
+
+    <!-- LLC -->
+    <div class="resource-card">
+      <div class="resource-card-header">
+        <div class="resource-icon" style="background:#EDF4FB;">🏢</div>
+        <div>
+          <div class="resource-title">LLC (Limited Liability Company) — California</div>
+          <div class="resource-desc">Most popular structure for small clothing brands. Protects personal assets and is flexible for taxes.</div>
+        </div>
+      </div>
+      <ul class="step-list">
+        <li>Choose a unique business name and check availability on the <strong>CA Secretary of State</strong> website (bizfileonline.sos.ca.gov)</li>
+        <li>File <strong>Articles of Organization (Form LLC-1)</strong> with the CA Secretary of State — $70 filing fee</li>
+        <li>Designate a <strong>Registered Agent</strong> in California (can be yourself or a service)</li>
+        <li>Draft an <strong>Operating Agreement</strong> (not required by CA law, but strongly recommended for multi-member LLCs)</li>
+        <li>Obtain an <strong>EIN (Employer Identification Number)</strong> from the IRS — free at irs.gov</li>
+        <li>Register with the <strong>CA Franchise Tax Board</strong> and pay the $800 annual minimum franchise tax (due April 15)</li>
+        <li>File <strong>Statement of Information (Form LLC-12)</strong> within 90 days of formation, then every 2 years — $20 fee</li>
+        <li>Open a <strong>dedicated business bank account</strong> — never mix personal and business funds</li>
+        <li>Obtain any required <strong>local business licenses</strong> (city/county level varies)</li>
+      </ul>
+      <div class="resource-links">
+        <a href="https://bizfileonline.sos.ca.gov" class="resource-link" target="_blank">CA Biz File Online</a>
+        <a href="https://www.irs.gov/businesses/small-businesses-self-employed/apply-for-an-employer-identification-number-ein-online" class="resource-link" target="_blank">IRS EIN Application</a>
+        <a href="https://www.ftb.ca.gov/file/business/types/limited-liability-company/index.html" class="resource-link" target="_blank">CA FTB — LLC Info</a>
+      </div>
+    </div>
+
+    <!-- S-Corp -->
+    <div class="resource-card">
+      <div class="resource-card-header">
+        <div class="resource-icon" style="background:#FDF4EA;">📊</div>
+        <div>
+          <div class="resource-title">S-Corporation Election</div>
+          <div class="resource-desc">Elect S-Corp tax status to potentially reduce self-employment taxes once your brand is profitable (generally $40K+ net profit).</div>
+        </div>
+      </div>
+      <ul class="step-list">
+        <li>First form a <strong>California Corporation</strong> (Form ARTS-GS, $100) or an LLC that elects corporate taxation</li>
+        <li>File <strong>IRS Form 2553</strong> to elect S-Corp status — must be filed within 75 days of formation or by March 15 of the tax year</li>
+        <li>File <strong>CA Form 3560</strong> (S-Corporation Election) with the CA Franchise Tax Board</li>
+        <li>Set a <strong>reasonable salary</strong> for yourself as owner-employee — must be market-rate, IRS will scrutinize if too low</li>
+        <li>Run <strong>payroll</strong> (quarterly 941 filings, state payroll taxes via EDD)</li>
+        <li>File <strong>Federal Form 1120-S</strong> and <strong>CA Form 100S</strong> annually</li>
+        <li>Issue <strong>Schedule K-1</strong> to all shareholders for their share of income/loss</li>
+        <li>Note: California S-Corps pay a <strong>1.5% net income tax</strong> (minimum $800) plus the $800 franchise tax — factor this in</li>
+      </ul>
+      <div class="resource-links">
+        <a href="https://www.irs.gov/forms-pubs/about-form-2553" class="resource-link" target="_blank">IRS Form 2553</a>
+        <a href="https://www.ftb.ca.gov/file/business/types/corporations/s-corporations.html" class="resource-link" target="_blank">CA FTB — S-Corp</a>
+        <a href="https://edd.ca.gov/en/payroll_taxes" class="resource-link" target="_blank">CA EDD Payroll Taxes</a>
+      </div>
+    </div>
+
+    <!-- Trademarks -->
+    <div class="resource-card">
+      <div class="resource-card-header">
+        <div class="resource-icon" style="background:#EDF5F0;">™️</div>
+        <div>
+          <div class="resource-title">Trademark Your Brand Name & Logo</div>
+          <div class="resource-desc">Critical for clothing brands — protect your name, logo, and designs from competitors.</div>
+        </div>
+      </div>
+      <ul class="step-list">
+        <li>Conduct a <strong>trademark search</strong> on the USPTO TESS database to check availability</li>
+        <li>Determine your <strong>trademark class</strong> — clothing falls under <strong>Class 25</strong> (International Classification)</li>
+        <li>File a trademark application at <strong>USPTO.gov</strong> — filing fees range from $250–$350 per class (TEAS Plus vs. Standard)</li>
+        <li>Respond to any <strong>Office Actions</strong> from the USPTO within 3 months (extendable)</li>
+        <li>Receive <strong>Notice of Publication</strong> — 30-day opposition period begins</li>
+        <li>Once approved, <strong>maintain the trademark</strong> — file Declaration of Use (Section 8) between years 5–6, then renew every 10 years</li>
+        <li>Consider a <strong>California State Trademark</strong> as well (cheaper, faster, but only covers CA)</li>
+      </ul>
+      <div class="resource-links">
+        <a href="https://www.uspto.gov/trademarks/apply" class="resource-link" target="_blank">USPTO Trademark Apply</a>
+        <a href="https://tmsearch.uspto.gov" class="resource-link" target="_blank">Trademark Search (TESS)</a>
+      </div>
+    </div>
+
+    <!-- Seller's Permit -->
+    <div class="resource-card">
+      <div class="resource-card-header">
+        <div class="resource-icon" style="background:#FCEDEC;">📋</div>
+        <div>
+          <div class="resource-title">California Seller's Permit & Sales Tax</div>
+          <div class="resource-desc">Required if you sell clothing in California. You must collect and remit CA sales tax (currently 7.25% base + local).</div>
+        </div>
+      </div>
+      <ul class="step-list">
+        <li>Register for a <strong>Seller's Permit</strong> through <strong>CDTFA</strong> (California Department of Tax and Fee Administration) — free</li>
+        <li>Collect <strong>California sales tax</strong> on all taxable sales — most clothing is taxable (unlike some states)</li>
+        <li>File <strong>CDTFA sales tax returns</strong> quarterly or monthly depending on sales volume</li>
+        <li>If selling online to out-of-state customers, understand <strong>economic nexus rules</strong> — you may owe tax in other states above $100K sales or 200 transactions</li>
+        <li>Consider using <strong>TaxJar or Avalara</strong> to automate multi-state sales tax compliance</li>
+      </ul>
+      <div class="resource-links">
+        <a href="https://onlineservices.cdtfa.ca.gov" class="resource-link" target="_blank">CDTFA Online Services</a>
+        <a href="https://www.cdtfa.ca.gov/formspubs/pub31.pdf" class="resource-link" target="_blank">Publication 31 — Clothing & Sales Tax</a>
+      </div>
+    </div>
+
+    <!-- Clothing Brand Specific -->
+    <div class="resource-card">
+      <div class="resource-card-header">
+        <div class="resource-icon" style="background:#F0EDE8;">👕</div>
+        <div>
+          <div class="resource-title">Clothing Brand Compliance — California Garment Law</div>
+          <div class="resource-desc">California has specific laws governing garment manufacturing. If you manufacture locally, compliance is required.</div>
+        </div>
+      </div>
+      <ul class="step-list">
+        <li>If manufacturing garments in CA, obtain a <strong>Garment Manufacturing License</strong> from the CA Labor Commissioner</li>
+        <li>Comply with <strong>SB 62 (Garment Worker Protection Act)</strong> — all workers must be paid hourly, not per piece</li>
+        <li>Ensure all clothing has required <strong>RN (Registered Identification Number)</strong> labels or your company name on care labels (FTC requirement)</li>
+        <li>Follow <strong>FTC Care Labeling Rules</strong> — all garments must include care instructions</li>
+        <li>Register with <strong>CPSC</strong> if manufacturing children's clothing — strict safety testing required</li>
+        <li>If importing fabrics or products, understand <strong>U.S. Customs duties</strong> and use an import broker if needed</li>
+        <li>Consider <strong>product liability insurance</strong> — essential for clothing brands selling to the public</li>
+      </ul>
+      <div class="resource-links">
+        <a href="https://www.dir.ca.gov/dlse/dlsegarment.htm" class="resource-link" target="_blank">CA Garment License</a>
+        <a href="https://www.ftc.gov/business-guidance/resources/threading-your-way-through-labeling-requirements-under-care-labeling-rule" class="resource-link" target="_blank">FTC Care Labeling</a>
+        <a href="https://www.ftc.gov/business-guidance/textile-wool-fur" class="resource-link" target="_blank">FTC Textile Rules</a>
+      </div>
+    </div>
+
+    <!-- Insurance -->
+    <div class="resource-card">
+      <div class="resource-card-header">
+        <div class="resource-icon" style="background:#F0EDE8;">🛡️</div>
+        <div>
+          <div class="resource-title">Business Insurance for Clothing Brands</div>
+          <div class="resource-desc">Protect your brand with the right coverage from day one.</div>
+        </div>
+      </div>
+      <ul class="step-list">
+        <li><strong>General Liability Insurance</strong> — covers bodily injury, property damage, advertising injury ($1M per occurrence recommended)</li>
+        <li><strong>Product Liability Insurance</strong> — covers claims that your clothing caused harm (often bundled with general liability)</li>
+        <li><strong>Commercial Property Insurance</strong> — covers your inventory, equipment, and studio</li>
+        <li><strong>Business Owner's Policy (BOP)</strong> — bundles general liability + property, often cheaper than buying separately</li>
+        <li>If hiring employees: <strong>Workers' Compensation Insurance</strong> is required by California law from day one</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- NOTES -->
+  <div class="page" id="page-notes">
+    <div class="page-header">
+      <div class="page-title">Notes</div>
+      <div class="page-sub">Capture ideas, meeting notes, and action items for your brand</div>
+    </div>
+
+    <div style="display:flex;gap:12px;margin-bottom:16px;">
+      <button class="btn btn-primary" onclick="newNote()">+ New Note</button>
+      <button class="btn btn-outline" onclick="deleteCurrentNote()">Delete Note</button>
+    </div>
+
+    <div class="notes-grid">
+      <div class="notes-list" id="notes-list">
+        <div style="padding:16px;font-size:13px;color:var(--text3);">No notes yet. Create one above.</div>
+      </div>
+      <div class="note-editor" id="note-editor-wrap">
+        <div class="note-editor-header">
+          <input class="note-title-input" id="note-title" placeholder="Note title..." oninput="saveCurrentNote()" />
+          <span id="note-date" style="font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;white-space:nowrap;"></span>
+        </div>
+        <textarea class="note-body-textarea" id="note-body" placeholder="Start writing..." oninput="saveCurrentNote()"></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADMIN -->
+  <div class="page" id="page-admin">
+    <div class="page-header">
+      <div class="page-title">Admin Settings</div>
+      <div class="page-sub">Configure your finance hub to match your business</div>
+    </div>
+
+    <div class="two-col">
+      <div>
+        <div class="card settings-section">
+          <div class="settings-title">Business Information</div>
+          <div class="field mb-16">
+            <label>Business / Brand Name</label>
+            <input type="text" id="set-brandname" placeholder="Your Brand Name" />
+          </div>
+          <div class="form-grid">
+            <div class="field">
+              <label>Tax Year</label>
+              <select id="set-taxyear">
+                <option value="2024">2024</option>
+                <option value="2025">2025</option>
+                <option value="2023">2023</option>
+                <option value="2022">2022</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Business Entity Type</label>
+              <select id="set-entity">
+                <option value="Sole Proprietor">Sole Proprietor</option>
+                <option value="LLC">LLC</option>
+                <option value="S-Corp">S-Corp</option>
+                <option value="C-Corp">C-Corp</option>
+              </select>
+            </div>
+          </div>
+          <div class="field mt-16">
+            <label>EIN (optional)</label>
+            <input type="text" id="set-ein" placeholder="XX-XXXXXXX" />
+          </div>
+          <div class="field mt-16">
+            <label>California Seller's Permit #</label>
+            <input type="text" id="set-permit" placeholder="Optional" />
+          </div>
+          <div class="field mt-16">
+            <label>Business Address</label>
+            <input type="text" id="set-address" placeholder="123 Main St, Los Angeles, CA 90001" />
+          </div>
+          <div class="field mt-16">
+            <label>CPA / Tax Professional Contact</label>
+            <input type="text" id="set-cpa" placeholder="Name or firm" />
+          </div>
+          <button class="btn btn-primary mt-16" onclick="saveSettings()">Save Settings</button>
+        </div>
+      </div>
+
+      <div>
+        <div class="card settings-section">
+          <div class="settings-title">Display & Preferences</div>
+          <div class="toggle-row">
+            <div>
+              <div class="toggle-label">Show disclaimer banner</div>
+              <div class="toggle-sub">Display the tax advice disclaimer on Dashboard</div>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" id="set-disclaimer" checked />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <div class="toggle-row">
+            <div>
+              <div class="toggle-label">Auto-classify write-off status</div>
+              <div class="toggle-sub">Automatically apply CA deductibility rules by category</div>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" id="set-autoclassify" checked />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <div class="toggle-row">
+            <div>
+              <div class="toggle-label">Show meal deduction reminder (50% CA rule)</div>
+              <div class="toggle-sub">Highlight partial meal deductions in write-offs</div>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" id="set-meal" checked />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="card settings-section mt-24">
+          <div class="settings-title">Data Management</div>
+          <p style="font-size:13px;color:var(--text2);margin-bottom:16px;">All data is stored locally in your browser. Export or clear as needed.</p>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <button class="btn btn-outline" onclick="exportData()">⬇ Export JSON Backup</button>
+            <button class="btn btn-danger" onclick="clearAllData()">✕ Clear All Data</button>
+          </div>
+        </div>
+
+        <div class="card mt-24">
+          <div class="settings-title">Important CA Tax Deadlines</div>
+          <table style="font-size:13px;">
+            <tr><td style="padding:8px 0;color:var(--text2);border-bottom:1px solid var(--border);">Jan 15</td><td style="padding:8px 12px;border-bottom:1px solid var(--border);">Q4 estimated tax payment</td></tr>
+            <tr><td style="padding:8px 0;color:var(--text2);border-bottom:1px solid var(--border);">Mar 15</td><td style="padding:8px 12px;border-bottom:1px solid var(--border);">S-Corp / Partnership return due (or extension)</td></tr>
+            <tr><td style="padding:8px 0;color:var(--text2);border-bottom:1px solid var(--border);">Apr 15</td><td style="padding:8px 12px;border-bottom:1px solid var(--border);">Personal return & LLC $800 franchise tax</td></tr>
+            <tr><td style="padding:8px 0;color:var(--text2);border-bottom:1px solid var(--border);">Apr 15</td><td style="padding:8px 12px;border-bottom:1px solid var(--border);">Q1 estimated tax payment</td></tr>
+            <tr><td style="padding:8px 0;color:var(--text2);border-bottom:1px solid var(--border);">Jun 15</td><td style="padding:8px 12px;border-bottom:1px solid var(--border);">Q2 estimated tax payment</td></tr>
+            <tr><td style="padding:8px 0;color:var(--text2);border-bottom:1px solid var(--border);">Sep 15</td><td style="padding:8px 12px;border-bottom:1px solid var(--border);">Q3 estimated tax payment</td></tr>
+            <tr><td style="padding:8px 0;color:var(--text2);">Oct 15</td><td style="padding:8px 12px;">Extended personal return deadline</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SPEND PLANNER -->
+  <div class="page" id="page-planner">
+    <div class="page-header">
+      <div class="page-title">Spend Planner</div>
+      <div class="page-sub">Plan budgets for trips, trade shows, business travel, or any upcoming expense</div>
+    </div>
+    <div class="card mb-16">
+      <div style="font-size:14px;font-weight:600;margin-bottom:14px;">Create New Plan</div>
+      <div class="form-grid-3">
+        <div class="field"><label>Plan Name</label><input type="text" id="pl-name" placeholder="e.g. NYC Trade Show — June" /></div>
+        <div class="field"><label>Type</label>
+          <select id="pl-type">
+            <option value="business">Business Trip / Event</option>
+            <option value="vacation">Vacation</option>
+            <option value="personal">Personal Purchase</option>
+            <option value="marketing">Marketing Campaign</option>
+            <option value="inventory">Inventory Run</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <div class="field"><label>Total Budget ($)</label><input type="number" id="pl-budget" placeholder="0.00" min="0" step="0.01" /></div>
+      </div>
+      <div class="form-grid mt-16" style="grid-template-columns:1fr 1fr 1fr;">
+        <div class="field"><label>Start Date</label><input type="date" id="pl-start" /></div>
+        <div class="field"><label>End Date</label><input type="date" id="pl-end" /></div>
+        <div class="field"><label>Notes (optional)</label><input type="text" id="pl-notes" placeholder="e.g. booth fee, hotel x3 nights" /></div>
+      </div>
+      <button class="btn btn-primary mt-16" onclick="createPlan()">+ Create Plan</button>
+    </div>
+
+    <div class="stats-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:24px;">
+      <div class="card"><div class="card-title">Active Plans</div><div class="card-value" id="pl-stat-count">0</div><div class="card-delta">Total plans</div></div>
+      <div class="card"><div class="card-title">Total Budgeted</div><div class="card-value amber" id="pl-stat-budget">$0</div><div class="card-delta">Across all plans</div></div>
+      <div class="card"><div class="card-title">Total Committed</div><div class="card-value red" id="pl-stat-spent">$0</div><div class="card-delta">Planned + Booked + Paid</div></div>
+    </div>
+
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="filterPlans('all',this)">All</button>
+      <button class="tab-btn" onclick="filterPlans('business',this)">Business</button>
+      <button class="tab-btn" onclick="filterPlans('vacation',this)">Vacation</button>
+      <button class="tab-btn" onclick="filterPlans('marketing',this)">Marketing</button>
+      <button class="tab-btn" onclick="filterPlans('inventory',this)">Inventory</button>
+    </div>
+
+    <div id="add-item-panel" style="display:none;" class="card mb-16">
+      <div style="font-size:14px;font-weight:600;margin-bottom:4px;">Add Item to: <span id="add-item-plan-name" style="color:var(--accent2);"></span></div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:14px;">Break your plan into individual line items to track every cost</div>
+      <div class="form-grid-3">
+        <div class="field"><label>Item Description</label><input type="text" id="ai-desc" placeholder="e.g. Round-trip flight LAX to JFK" /></div>
+        <div class="field"><label>Estimated Cost ($)</label><input type="number" id="ai-cost" placeholder="0.00" min="0" step="0.01" /></div>
+        <div class="field"><label>Category</label>
+          <select id="ai-cat">
+            <option value="Flight">Flight</option>
+            <option value="Hotel">Hotel</option>
+            <option value="Meals">Meals</option>
+            <option value="Transport">Transport / Rideshare</option>
+            <option value="Registration">Event / Registration Fee</option>
+            <option value="Supplies">Supplies / Materials</option>
+            <option value="Marketing">Marketing / Promo</option>
+            <option value="Shopping">Shopping</option>
+            <option value="Entertainment">Entertainment</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-grid mt-16" style="grid-template-columns:1fr 1fr 1fr;">
+        <div class="field"><label>Status</label>
+          <select id="ai-status">
+            <option value="planned">Planned</option>
+            <option value="booked">Booked</option>
+            <option value="paid">Paid</option>
+          </select>
+        </div>
+        <div class="field"><label>Business-related?</label>
+          <select id="ai-biz">
+            <option value="yes">Yes — potential write-off</option>
+            <option value="partial">Partially (mixed trip)</option>
+            <option value="no">No — personal only</option>
+          </select>
+        </div>
+        <div class="field" style="display:flex;align-items:flex-end;gap:8px;">
+          <button class="btn btn-primary" style="flex:1;" onclick="addPlanItem()">+ Add Item</button>
+          <button class="btn btn-outline" onclick="closeAddItem()">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="plan-cards" id="plan-cards">
+      <div class="card" style="grid-column:1/-1;"><div class="empty-state">No plans yet. Create your first plan above.</div></div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+// ─── DATA ───────────────────────────────────────────────────────
+let state = {
+  writeoffs: [],
+  transactions: [],
+  notes: [],
+  settings: {
+    brandName: 'My Clothing Brand',
+    taxYear: '2024',
+    entity: 'LLC',
+    ein: '',
+    permit: '',
+    address: '',
+    cpa: '',
+    showDisclaimer: true,
+    autoClassify: true,
+    showMeal: true
+  },
+  plans: [],
+  activeNote: null,
+  currentWOFilter: 'all',
+  activePlanForItem: null,
+  currentPlanFilter: 'all'
+};
+
+let addItemPanelMoved = false;
+
+function load() {
+  const s = localStorage.getItem('brandfinance_v2');
+  if (s) {
+    try { state = JSON.parse(s); if (!state.plans) state.plans = []; } catch(e) {}
+  }
+}
+function save() {
+  localStorage.setItem('brandfinance_v2', JSON.stringify(state));
+}
+load();
+
+// ─── CA DEDUCTIBILITY RULES ──────────────────────────────────────
+const CA_RULES = {
+  cogs:          { status: 'yes',     pct: 1.0,  label: 'Fully Deductible' },
+  equipment:     { status: 'yes',     pct: 1.0,  label: 'Fully Deductible' },
+  marketing:     { status: 'yes',     pct: 1.0,  label: 'Fully Deductible' },
+  software:      { status: 'yes',     pct: 1.0,  label: 'Fully Deductible' },
+  shipping:      { status: 'yes',     pct: 1.0,  label: 'Fully Deductible' },
+  professional:  { status: 'yes',     pct: 1.0,  label: 'Fully Deductible' },
+  insurance:     { status: 'yes',     pct: 1.0,  label: 'Fully Deductible' },
+  rent:          { status: 'yes',     pct: 1.0,  label: 'Fully Deductible' },
+  homeoffice:    { status: 'partial', pct: 0.5,  label: 'Partial (Business % Only)' },
+  vehicle:       { status: 'partial', pct: 0.5,  label: 'Partial (Business Use %)' },
+  travel:        { status: 'yes',     pct: 1.0,  label: 'Fully Deductible' },
+  meals:         { status: 'partial', pct: 0.5,  label: '50% — CA Follows IRC §274' },
+  wages:         { status: 'yes',     pct: 1.0,  label: 'Fully Deductible' },
+  phone:         { status: 'partial', pct: 0.5,  label: 'Partial (Business % Only)' },
+  photography:   { status: 'yes',     pct: 1.0,  label: 'Fully Deductible' },
+  other:         { status: 'yes',     pct: 1.0,  label: 'Fully Deductible' },
+  personal:      { status: 'no',      pct: 0.0,  label: 'NOT Deductible' },
+  clothing:      { status: 'no',      pct: 0.0,  label: 'NOT Deductible (Personal Clothing)' },
+  entertainment: { status: 'no',      pct: 0.0,  label: 'NOT Deductible — Post-TCJA' }
+};
+
+const CATEGORY_LABELS = {
+  cogs:'Materials/COGS', equipment:'Equipment', marketing:'Marketing', software:'Software',
+  shipping:'Shipping', professional:'Prof. Services', insurance:'Insurance', rent:'Rent/Studio',
+  homeoffice:'Home Office', vehicle:'Vehicle/Mileage', travel:'Travel', meals:'Meals (Biz)',
+  wages:'Wages/Contractors', phone:'Phone & Internet', photography:'Photography', other:'Other',
+  personal:'Personal', clothing:'Personal Clothing', entertainment:'Entertainment'
+};
+
+// ─── NAV ─────────────────────────────────────────────────────────
+document.querySelectorAll('.nav-item').forEach(item => {
+  item.addEventListener('click', () => {
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    item.classList.add('active');
+    document.getElementById('page-' + item.dataset.page).classList.add('active');
+    if (item.dataset.page === 'dashboard') refreshDashboard();
+    if (item.dataset.page === 'finances') refreshChart();
+    if (item.dataset.page === 'admin') loadSettings();
+    if (item.dataset.page === 'notes') renderNotes();
+    if (item.dataset.page === 'writeoffs') renderWOTable();
+    if (item.dataset.page === 'planner') renderPlans();
+  });
+});
+
+// ─── WRITE-OFFS ──────────────────────────────────────────────────
+function addWriteoff() {
+  const desc = document.getElementById('wo-desc').value.trim();
+  const amount = parseFloat(document.getElementById('wo-amount').value);
+  const date = document.getElementById('wo-date').value;
+  const cat = document.getElementById('wo-category').value;
+  const ref = document.getElementById('wo-ref').value.trim();
+  if (!desc || isNaN(amount) || !date) { alert('Please fill in description, amount, and date.'); return; }
+  const rule = CA_RULES[cat];
+  state.writeoffs.push({ id: Date.now(), desc, amount, date, cat, ref, status: rule.status, pct: rule.pct });
+  save();
+  renderWOTable();
+  updateBadges();
+  document.getElementById('wo-desc').value = '';
+  document.getElementById('wo-amount').value = '';
+  document.getElementById('wo-ref').value = '';
+}
+
+function filterWO(f, btn) {
+  state.currentWOFilter = f;
+  document.querySelectorAll('#page-writeoffs .tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderWOTable();
+}
+
+function renderWOTable() {
+  const tbody = document.getElementById('wo-table-body');
+  let items = state.writeoffs;
+  if (state.currentWOFilter !== 'all') items = items.filter(w => w.status === state.currentWOFilter);
+  if (!items.length) { tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state">No entries match this filter.</div></td></tr>'; updateWOTotal(); return; }
+  tbody.innerHTML = items.sort((a,b) => b.date.localeCompare(a.date)).map(w => {
+    const rule = CA_RULES[w.cat];
+    const deductAmt = w.amount * w.pct;
+    let badge = '';
+    if (w.status === 'yes') badge = '<span class="status-badge badge-yes"><span class="badge-dot"></span>Deductible</span>';
+    else if (w.status === 'partial') badge = '<span class="status-badge badge-partial"><span class="badge-dot"></span>Partial</span>';
+    else badge = '<span class="status-badge badge-no"><span class="badge-dot"></span>Not Deductible</span>';
+    return `<tr>
+      <td style="font-family:'DM Mono',monospace;font-size:12px;">${w.date}</td>
+      <td>${w.desc}</td>
+      <td style="color:var(--text2);font-size:12.5px;">${CATEGORY_LABELS[w.cat] || w.cat}</td>
+      <td style="font-family:'DM Mono',monospace;">$${w.amount.toFixed(2)}</td>
+      <td>${badge}<div style="font-size:11px;color:var(--text3);margin-top:3px;">${rule.label}</div></td>
+      <td style="font-family:'DM Mono',monospace;color:${w.status === 'no' ? 'var(--text3)' : w.status === 'partial' ? 'var(--amber)' : 'var(--green)'};">$${deductAmt.toFixed(2)}</td>
+      <td style="font-size:12px;color:var(--text3);">${w.ref || '—'}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="deleteWO(${w.id})">✕</button></td>
+    </tr>`;
+  }).join('');
+  updateWOTotal();
+}
+
+function updateWOTotal() {
+  const total = state.writeoffs.reduce((s, w) => s + w.amount * w.pct, 0);
+  document.getElementById('wo-total').textContent = '$' + total.toFixed(2);
+}
+
+function deleteWO(id) {
+  state.writeoffs = state.writeoffs.filter(w => w.id !== id);
+  save(); renderWOTable(); updateBadges();
+}
+
+// ─── TRANSACTIONS ────────────────────────────────────────────────
+let pieChart = null;
+const PIE_COLORS = ['#C8843A','#4A7C59','#5B8ECC','#B94040','#7B5EA7','#3B9EA0','#C46D2E','#5A7A40','#8B5E3C'];
+
+function addTransaction() {
+  const type = document.getElementById('tx-type').value;
+  const desc = document.getElementById('tx-desc').value.trim();
+  const amount = parseFloat(document.getElementById('tx-amount').value);
+  const date = document.getElementById('tx-date').value;
+  const cat = document.getElementById('tx-category').value;
+  if (!desc || isNaN(amount) || !date) { alert('Please fill in all fields.'); return; }
+  state.transactions.push({ id: Date.now(), type, desc, amount, date, cat });
+  save();
+  renderTransactions();
+  refreshChart();
+  document.getElementById('tx-desc').value = '';
+  document.getElementById('tx-amount').value = '';
+}
+
+function renderTransactions() {
+  const tbody = document.getElementById('tx-table-body');
+  if (!state.transactions.length) { tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state">No transactions yet.</div></td></tr>'; updateTotals(); return; }
+  tbody.innerHTML = state.transactions.sort((a,b) => b.date.localeCompare(a.date)).map(tx => {
+    const color = tx.type === 'income' ? 'var(--green)' : 'var(--red)';
+    const sign = tx.type === 'income' ? '+' : '-';
+    return `<tr>
+      <td style="font-family:'DM Mono',monospace;font-size:12px;">${tx.date}</td>
+      <td><span class="status-badge ${tx.type === 'income' ? 'badge-yes' : 'badge-no'}">${tx.type === 'income' ? '↑ Income' : '↓ Expense'}</span></td>
+      <td>${tx.desc}</td>
+      <td style="font-size:12.5px;color:var(--text2);">${tx.cat}</td>
+      <td style="font-family:'DM Mono',monospace;color:${color};font-weight:500;">${sign}$${tx.amount.toFixed(2)}</td>
+      <td><button class="btn btn-danger btn-sm" onclick="deleteTx(${tx.id})">✕</button></td>
+    </tr>`;
+  }).join('');
+  updateTotals();
+}
+
+function updateTotals() {
+  const income = state.transactions.filter(t => t.type === 'income').reduce((s,t) => s + t.amount, 0);
+  const expenses = state.transactions.filter(t => t.type === 'expense').reduce((s,t) => s + t.amount, 0);
+  document.getElementById('total-income-lbl').textContent = '$' + income.toFixed(2);
+  document.getElementById('total-expense-lbl').textContent = '$' + expenses.toFixed(2);
+}
+
+function deleteTx(id) {
+  state.transactions = state.transactions.filter(t => t.id !== id);
+  save(); renderTransactions(); refreshChart();
+}
+
+function refreshChart() {
+  const expenses = state.transactions.filter(t => t.type === 'expense');
+  const bycat = {};
+  expenses.forEach(t => { bycat[t.cat] = (bycat[t.cat] || 0) + t.amount; });
+  const labels = Object.keys(bycat);
+  const values = Object.values(bycat);
+
+  const legend = document.getElementById('pie-legend');
+  legend.innerHTML = '';
+
+  if (!labels.length) {
+    if (pieChart) { pieChart.destroy(); pieChart = null; }
+    return;
+  }
+
+  const colors = labels.map((_, i) => PIE_COLORS[i % PIE_COLORS.length]);
+  const ctx = document.getElementById('pieChart').getContext('2d');
+  if (pieChart) pieChart.destroy();
+  pieChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: { labels, datasets: [{ data: values, backgroundColor: colors, borderColor: '#fff', borderWidth: 3 }] },
+    options: {
+      responsive: true, maintainAspectRatio: false, cutout: '60%',
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ` $${ctx.raw.toFixed(2)} (${Math.round(ctx.parsed / values.reduce((a,b) => a+b,0) * 100)}%)` } } }
+    }
+  });
+
+  const total = values.reduce((a,b) => a+b, 0);
+  labels.forEach((l, i) => {
+    const pct = Math.round(values[i] / total * 100);
+    legend.innerHTML += `<span style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text2);">
+      <span style="width:10px;height:10px;border-radius:2px;background:${colors[i]};flex-shrink:0;"></span>${l} ${pct}%</span>`;
+  });
+}
+
+// ─── NOTES ──────────────────────────────────────────────────────
+function renderNotes() {
+  const list = document.getElementById('notes-list');
+  updateBadges();
+  if (!state.notes.length) {
+    list.innerHTML = '<div style="padding:16px;font-size:13px;color:var(--text3);">No notes yet. Create one above.</div>';
+    return;
+  }
+  list.innerHTML = state.notes.sort((a,b) => b.updated - a.updated).map(n => {
+    const isActive = state.activeNote === n.id;
+    const date = new Date(n.updated).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return `<div class="note-item ${isActive ? 'active' : ''}" onclick="openNote(${n.id})">
+      <div class="note-item-title">${n.title || 'Untitled'}</div>
+      <div class="note-item-preview">${n.body ? n.body.substring(0, 60) + '...' : 'Empty note'}</div>
+      <div class="note-item-date">${date}</div>
+    </div>`;
+  }).join('');
+  loadNoteEditor();
+}
+
+function newNote() {
+  const n = { id: Date.now(), title: '', body: '', updated: Date.now() };
+  state.notes.unshift(n);
+  state.activeNote = n.id;
+  save(); renderNotes();
+}
+
+function openNote(id) {
+  state.activeNote = id;
+  renderNotes();
+}
+
+function loadNoteEditor() {
+  const note = state.notes.find(n => n.id === state.activeNote);
+  if (note) {
+    document.getElementById('note-title').value = note.title;
+    document.getElementById('note-body').value = note.body;
+    document.getElementById('note-date').textContent = new Date(note.updated).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  } else {
+    document.getElementById('note-title').value = '';
+    document.getElementById('note-body').value = '';
+    document.getElementById('note-date').textContent = '';
+  }
+}
+
+function saveCurrentNote() {
+  if (!state.activeNote) return;
+  const note = state.notes.find(n => n.id === state.activeNote);
+  if (note) {
+    note.title = document.getElementById('note-title').value;
+    note.body = document.getElementById('note-body').value;
+    note.updated = Date.now();
+    save();
+    const items = document.querySelectorAll('.note-item');
+    const el = document.querySelector('.note-item.active .note-item-title');
+    if (el) el.textContent = note.title || 'Untitled';
+    updateBadges();
+  }
+}
+
+function deleteCurrentNote() {
+  if (!state.activeNote) return;
+  if (!confirm('Delete this note?')) return;
+  state.notes = state.notes.filter(n => n.id !== state.activeNote);
+  state.activeNote = state.notes.length ? state.notes[0].id : null;
+  save(); renderNotes();
+}
+
+// ─── DASHBOARD ───────────────────────────────────────────────────
+function refreshDashboard() {
+  const income = state.transactions.filter(t => t.type === 'income').reduce((s,t) => s + t.amount, 0);
+  const expenses = state.transactions.filter(t => t.type === 'expense').reduce((s,t) => s + t.amount, 0);
+  const writeoffs = state.writeoffs.reduce((s,w) => s + w.amount * w.pct, 0);
+  const net = income - expenses;
+
+  document.getElementById('dash-income').textContent = '$' + income.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+  document.getElementById('dash-expenses').textContent = '$' + expenses.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+  document.getElementById('dash-writeoffs').textContent = '$' + writeoffs.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+  const netEl = document.getElementById('dash-net');
+  netEl.textContent = (net < 0 ? '-' : '') + '$' + Math.abs(net).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+  netEl.className = 'card-value ' + (net >= 0 ? 'green' : 'red');
+
+  const recent = document.getElementById('dash-recent');
+  const top5 = state.transactions.sort((a,b) => b.date.localeCompare(a.date)).slice(0,5);
+  if (!top5.length) { recent.innerHTML = '<div class="empty-state">No transactions yet.</div>'; }
+  else {
+    recent.innerHTML = top5.map(tx => `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);">
+      <div><div style="font-size:13px;">${tx.desc}</div><div style="font-size:11px;color:var(--text3);">${tx.cat} · ${tx.date}</div></div>
+      <div style="font-weight:500;font-family:'DM Mono',monospace;font-size:13px;color:${tx.type === 'income' ? 'var(--green)' : 'var(--red)'};">${tx.type === 'income' ? '+' : '-'}$${tx.amount.toFixed(2)}</div>
+    </div>`).join('');
+  }
+
+  const woSummary = document.getElementById('dash-wo-summary');
+  const deductible = state.writeoffs.filter(w => w.status === 'yes').length;
+  const partial = state.writeoffs.filter(w => w.status === 'partial').length;
+  const notDeduct = state.writeoffs.filter(w => w.status === 'no').length;
+  if (!state.writeoffs.length) { woSummary.innerHTML = '<div class="empty-state">No write-offs logged yet.</div>'; }
+  else {
+    woSummary.innerHTML = `
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;"><span style="display:flex;align-items:center;gap:6px;font-size:13px;"><span class="badge-dot" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);"></span>Fully Deductible</span><strong style="font-family:'DM Mono',monospace;">${deductible} entries</strong></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;"><span style="display:flex;align-items:center;gap:6px;font-size:13px;"><span class="badge-dot" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--amber);"></span>Partial</span><strong style="font-family:'DM Mono',monospace;">${partial} entries</strong></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;"><span style="display:flex;align-items:center;gap:6px;font-size:13px;"><span class="badge-dot" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--red);"></span>Not Deductible</span><strong style="font-family:'DM Mono',monospace;">${notDeduct} entries</strong></div>
+        <div style="height:1px;background:var(--border);"></div>
+        <div style="display:flex;justify-content:space-between;font-size:14px;font-weight:600;"><span>Total Write-offs</span><span style="font-family:'DM Mono',monospace;color:var(--green);">$${writeoffs.toFixed(2)}</span></div>
+      </div>`;
+  }
+}
+
+// ─── SETTINGS ────────────────────────────────────────────────────
+function loadSettings() {
+  const s = state.settings;
+  document.getElementById('set-brandname').value = s.brandName || '';
+  document.getElementById('set-taxyear').value = s.taxYear || '2024';
+  document.getElementById('set-entity').value = s.entity || 'LLC';
+  document.getElementById('set-ein').value = s.ein || '';
+  document.getElementById('set-permit').value = s.permit || '';
+  document.getElementById('set-address').value = s.address || '';
+  document.getElementById('set-cpa').value = s.cpa || '';
+  document.getElementById('set-disclaimer').checked = s.showDisclaimer !== false;
+  document.getElementById('set-autoclassify').checked = s.autoClassify !== false;
+  document.getElementById('set-meal').checked = s.showMeal !== false;
+}
+
+function saveSettings() {
+  state.settings = {
+    brandName: document.getElementById('set-brandname').value,
+    taxYear: document.getElementById('set-taxyear').value,
+    entity: document.getElementById('set-entity').value,
+    ein: document.getElementById('set-ein').value,
+    permit: document.getElementById('set-permit').value,
+    address: document.getElementById('set-address').value,
+    cpa: document.getElementById('set-cpa').value,
+    showDisclaimer: document.getElementById('set-disclaimer').checked,
+    autoClassify: document.getElementById('set-autoclassify').checked,
+    showMeal: document.getElementById('set-meal').checked
+  };
+  save();
+  const bn = state.settings.brandName || 'My Clothing Brand';
+  document.getElementById('sb-brand').textContent = bn;
+  document.getElementById('sb-year').textContent = state.settings.taxYear;
+  document.getElementById('sb-taxyear').textContent = state.settings.taxYear + ' — California';
+  document.title = bn + ' Finance Hub';
+  alert('Settings saved!');
+}
+
+// ─── UTILS ──────────────────────────────────────────────────────
+function updateBadges() {
+  document.getElementById('nb-wo').textContent = state.writeoffs.length;
+  document.getElementById('nb-notes').textContent = state.notes.length;
+  document.getElementById('nb-plans').textContent = state.plans.length;
+}
+
+function exportData() {
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = 'brand-finance-backup-' + new Date().toISOString().split('T')[0] + '.json';
+  a.click();
+}
+
+function clearAllData() {
+  if (!confirm('⚠️ This will permanently delete ALL your data. Are you sure?')) return;
+  if (!confirm('Are you absolutely sure? This cannot be undone.')) return;
+  localStorage.removeItem('brandfinance_v2');
+  location.reload();
+}
+
+// ─── SPEND PLANNER ──────────────────────────────────────────────
+const PLAN_TYPE_META = {
+  business:  { label: 'Business', pillClass: 'pill-biz' },
+  vacation:  { label: 'Vacation', pillClass: 'pill-vac' },
+  personal:  { label: 'Personal', pillClass: 'pill-personal' },
+  marketing: { label: 'Marketing', pillClass: 'pill-biz' },
+  inventory: { label: 'Inventory', pillClass: 'pill-biz' },
+  other:     { label: 'Other', pillClass: 'pill-personal' }
+};
+const BIZ_LABELS = { yes: '✓ Write-off', partial: '~ Partial', no: '— Personal' };
+const ITEM_STATUS_COLORS = { planned: 'status-planned', booked: 'status-booked', paid: 'status-paid' };
+
+function createPlan() {
+  const name = document.getElementById('pl-name').value.trim();
+  const type = document.getElementById('pl-type').value;
+  const budget = parseFloat(document.getElementById('pl-budget').value);
+  const start = document.getElementById('pl-start').value;
+  const end = document.getElementById('pl-end').value;
+  const notes = document.getElementById('pl-notes').value.trim();
+  if (!name || isNaN(budget) || budget <= 0) { alert('Please enter a plan name and budget.'); return; }
+  state.plans.push({ id: Date.now(), name, type, budget, start, end, notes, items: [] });
+  save();
+  document.getElementById('pl-name').value = '';
+  document.getElementById('pl-budget').value = '';
+  document.getElementById('pl-notes').value = '';
+  renderPlans();
+  updateBadges();
+}
+
+function filterPlans(f, btn) {
+  state.currentPlanFilter = f;
+  document.querySelectorAll('#page-planner .tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderPlans();
+}
+
+function openAddItem(planId) {
+  state.activePlanForItem = planId;
+  const plan = state.plans.find(p => p.id === planId);
+  document.getElementById('add-item-plan-name').textContent = plan.name;
+  const panel = document.getElementById('add-item-panel');
+  panel.style.display = 'block';
+  const planCard = document.getElementById('plan-card-' + planId);
+  if (planCard) planCard.parentNode.insertBefore(panel, planCard.nextSibling);
+  document.getElementById('ai-desc').focus();
+}
+
+function closeAddItem() {
+  document.getElementById('add-item-panel').style.display = 'none';
+  state.activePlanForItem = null;
+  document.getElementById('ai-desc').value = '';
+  document.getElementById('ai-cost').value = '';
+}
+
+function addPlanItem() {
+  if (!state.activePlanForItem) return;
+  const desc = document.getElementById('ai-desc').value.trim();
+  const cost = parseFloat(document.getElementById('ai-cost').value);
+  const cat = document.getElementById('ai-cat').value;
+  const status = document.getElementById('ai-status').value;
+  const biz = document.getElementById('ai-biz').value;
+  if (!desc || isNaN(cost)) { alert('Please fill in item description and cost.'); return; }
+  const plan = state.plans.find(p => p.id === state.activePlanForItem);
+  if (!plan) return;
+  plan.items.push({ id: Date.now(), desc, cost, cat, status, biz });
+  save();
+  document.getElementById('ai-desc').value = '';
+  document.getElementById('ai-cost').value = '';
+  renderPlans();
+}
+
+function deletePlanItem(planId, itemId) {
+  const plan = state.plans.find(p => p.id === planId);
+  if (!plan) return;
+  plan.items = plan.items.filter(i => i.id !== itemId);
+  save(); renderPlans();
+}
+
+function deletePlan(planId) {
+  if (!confirm('Delete this plan and all its items?')) return;
+  state.plans = state.plans.filter(p => p.id !== planId);
+  if (state.activePlanForItem === planId) closeAddItem();
+  save(); renderPlans(); updateBadges();
+}
+
+function updateItemStatus(planId, itemId, newStatus) {
+  const plan = state.plans.find(p => p.id === planId);
+  if (!plan) return;
+  const item = plan.items.find(i => i.id === itemId);
+  if (item) { item.status = newStatus; save(); renderPlans(); }
+}
+
+function renderPlans() {
+  const container = document.getElementById('plan-cards');
+  let plans = state.plans;
+  if (state.currentPlanFilter !== 'all') plans = plans.filter(p => p.type === state.currentPlanFilter);
+
+  // Update stats from ALL plans
+  const allBudget = state.plans.reduce((s, p) => s + p.budget, 0);
+  const allSpent = state.plans.reduce((s, p) => s + p.items.reduce((ss, i) => ss + i.cost, 0), 0);
+  document.getElementById('pl-stat-count').textContent = state.plans.length;
+  document.getElementById('pl-stat-budget').textContent = '$' + allBudget.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+  document.getElementById('pl-stat-spent').textContent = '$' + allSpent.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+
+  if (!plans.length) {
+    container.innerHTML = '<div class="card" style="grid-column:1/-1;"><div class="empty-state">No plans match this filter.</div></div>';
+    return;
+  }
+
+  container.innerHTML = plans.map(plan => {
+    const meta = PLAN_TYPE_META[plan.type] || PLAN_TYPE_META.other;
+    const totalItems = plan.items.reduce((s, i) => s + i.cost, 0);
+    const pct = plan.budget > 0 ? Math.min((totalItems / plan.budget) * 100, 100) : 0;
+    const fillClass = pct >= 100 ? 'fill-over' : pct >= 75 ? 'fill-warn' : 'fill-safe';
+    const remaining = plan.budget - totalItems;
+    const dateRange = plan.start && plan.end ? `${plan.start} → ${plan.end}` : plan.start || '';
+    const writeoffTotal = plan.items.filter(i => i.biz === 'yes').reduce((s,i) => s+i.cost, 0);
+    const partialTotal = plan.items.filter(i => i.biz === 'partial').reduce((s,i) => s+i.cost*0.5, 0);
+
+    const itemsHTML = plan.items.length ? plan.items.map(item => {
+      const bizColor = item.biz === 'yes' ? 'var(--green)' : item.biz === 'partial' ? 'var(--amber)' : 'var(--text3)';
+      return `<div class="plan-item-row">
+        <div style="flex:1;min-width:0;">
+          <div class="plan-item-name">${item.desc}</div>
+          <div class="plan-item-cat">${item.cat} · <span style="color:${bizColor};font-size:11px;">${BIZ_LABELS[item.biz]}</span></div>
+        </div>
+        <div class="plan-item-right">
+          <select class="plan-item-status ${ITEM_STATUS_COLORS[item.status]}" style="padding:2px 6px;font-size:11px;border-radius:99px;border:none;cursor:pointer;background:inherit;font-family:'DM Sans',sans-serif;"
+            onchange="updateItemStatus(${plan.id}, ${item.id}, this.value)">
+            <option value="planned" ${item.status==='planned'?'selected':''}>Planned</option>
+            <option value="booked" ${item.status==='booked'?'selected':''}>Booked</option>
+            <option value="paid" ${item.status==='paid'?'selected':''}>Paid</option>
+          </select>
+          <span class="plan-item-amt" style="color:var(--text);">$${item.cost.toFixed(2)}</span>
+          <button class="btn btn-danger btn-sm" onclick="deletePlanItem(${plan.id}, ${item.id})" style="padding:3px 8px;">✕</button>
+        </div>
+      </div>`;
+    }).join('') : '<div style="padding:14px 20px;font-size:13px;color:var(--text3);">No items yet — add your first expense below.</div>';
+
+    return `<div class="plan-card" id="plan-card-${plan.id}">
+      <div class="plan-card-header">
+        <div class="plan-card-header-left">
+          <div class="plan-card-name">${plan.name}</div>
+          <div class="plan-card-meta">${dateRange}${plan.notes ? ' · ' + plan.notes : ''}</div>
+        </div>
+        <span class="plan-type-pill ${meta.pillClass}">${meta.label}</span>
+      </div>
+      <div class="plan-budget-row">
+        <span style="color:var(--text2);">$${totalItems.toFixed(2)} <span style="color:var(--text3);">of $${plan.budget.toFixed(2)}</span></span>
+        <span style="color:${remaining < 0 ? 'var(--red)' : 'var(--green)'};font-weight:500;font-family:'DM Mono',monospace;font-size:13px;">${remaining < 0 ? '⚠ Over by $' + Math.abs(remaining).toFixed(2) : '$' + remaining.toFixed(2) + ' left'}</span>
+      </div>
+      <div class="plan-progress-wrap">
+        <div class="plan-progress-track"><div class="plan-progress-fill ${fillClass}" style="width:${pct}%;"></div></div>
+      </div>
+      ${writeoffTotal > 0 || partialTotal > 0 ? `<div style="padding:6px 20px 10px;font-size:12px;color:var(--green);">Potential write-off: $${(writeoffTotal + partialTotal).toFixed(2)}</div>` : ''}
+      <div class="plan-items">${itemsHTML}</div>
+      <div class="plan-footer">
+        <button class="btn btn-outline btn-sm" onclick="openAddItem(${plan.id})" style="flex:1;">+ Add Item</button>
+        <button class="btn btn-danger btn-sm" onclick="deletePlan(${plan.id})">Delete Plan</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ─── INIT ────────────────────────────────────────────────────────
+function init() {
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('wo-date').value = today;
+  document.getElementById('tx-date').value = today;
+  const s = state.settings;
+  document.getElementById('sb-brand').textContent = s.brandName || 'My Clothing Brand';
+  document.getElementById('sb-year').textContent = s.taxYear || '2024';
+  document.getElementById('sb-taxyear').textContent = (s.taxYear || '2024') + ' — California';
+  updateBadges();
+  renderWOTable();
+  renderTransactions();
+  refreshDashboard();
+}
+init();
+</script>
+</body>
+</html>
